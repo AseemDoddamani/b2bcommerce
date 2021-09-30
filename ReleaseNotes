@@ -1,0 +1,196 @@
+--- RELEASE NOTES ---
+
+-- PRE-DEPLOYMENT STEPS --
+
+1. Enable Commerce
+	a. Go to Setup > Commerce
+	b. Check the Enable Commerce
+	c. Click Save
+
+2. Enable ExperienceBundle Metadata API and Update Role and User Settings
+	a. Go to Setup > Digital Experience > Settings
+	b. Under Experience Management Settings, check Enable ExperienceBundle Metadata API.
+	c. Under Experience Roles and User Settings, check Allow using standard external profiles for self-registration and user creation.
+	d. Click Save
+
+3. Enable Order Preferences
+	a. Go to Setup > Order Settings
+	b. Check the preferences confirming any dialogs along the way:
+		i. Enable Orders: Checked
+		ii. Enable Enhanced Commerce Orders: Checked
+		iii. Enable Optional Price Books for Orders: Checked
+	c. Click Save
+
+4. Enable Data Translation and Multi-Currency
+	a. Go to Setup > Company Information
+	b. Click ​Edit
+		i. Enable data translation:​ Checked
+		ii. Activate Multiple Currencies: ​Checked
+	c. Click ​Save
+
+5. Field Accessibility and Commerce App Reports
+	a. Go to Setup > Field Accessibility
+	b. Click ​Order
+	c. Click on ​View by Fields
+	d. Choose ​Sales Store
+	e. Click the link right of System Administrator (Hidden underlined)
+		i. Visible: ​Checked
+		ii. Add the Sales Store field to the Order Layout page layout: ​Selected
+	f. Click ​Save
+
+6. Enable Lightning Email Templates
+	a. Go to Setup > Lightning Email Templates
+	b. Enable Folder and Enhanced Sharing
+
+
+-- POST-DEPLOYMENT STEPS --
+
+1. Create Store
+	a. Go to Commerce App > Stores
+	b. Click Create a Store
+		i. Store Name - SEG Automotive Store
+		ii. URL - segautomotivestore
+
+2. Update Administration
+	a. Go to Commerce App > Stores > SEG Automotive Store
+	b. Click Administration
+		i. Under section More Information, click Administration
+	c. Go to Members
+		i. Under Profiles, add System Administrator and Customer Community Plus Login User
+		ii. Under Permission Sets, add B2B Buyer
+	d. Go to Login and Registration
+		i. Update Logo File
+		ii. Update Background - #009164
+		iii. Update Login Button - #009164
+
+3. Deploy the Store from Change Sets
+	a. Go to Setup > Inbound Change Sets
+	b. Deploy the valid Commerce change set.
+
+4. Apply the Store Configuration
+	a. Go to Commerce App > Stores > SEG Automotive Store
+	b. Click Administration
+		i. Under section Store Migration, box Apply Store Configuration
+		ii. Click Apply
+
+5. Link Store and Salesforce CMS
+	a. Go to Salesforce CMS App
+	b. Click Create CMS Workspace
+		i. Name - SEG Automotive Store, Next
+		ii. Select SEG Automotive Store
+		iii. Search and select Aftermarket Users (public group) and Admins
+		iv. Select Contributor Role - 
+			Aftermarket Users - Content Manager
+			Admin - Content Admin
+		v. Add Languages English (US), German
+			Default - English (US)
+	c. Save
+
+6. Check Email Deliverability
+	a. Go to Setup > Email > Deliverability
+	b. Under Deliverability, Access level = All Email
+	c. Save
+
+7. Setup Public Group Users
+	a. Go to Setup > Public Groups
+	b. Select Aftermarket Users > Edit
+		i. Set the User required
+	c. Save
+
+8. Approvers for the ShopMe Workflow
+	a. Go to Setup > Custom Settings > Workflow > Click Manage
+	b. In the alphabets filter, select 'G'
+	c. Select 'Global-ShopMe'
+		i. Update Approver fields with the right User Ids
+	d. Save
+
+9. Data Migration
+
+10. Build Your Search Index
+	a. Go to Commerce App > Stores > SEG Automotive Store > Click Search
+	b. Under Searchable Fields > Manage Searchable Fields, Add
+		i. EAN
+		ii. Generation
+		iii. Make
+		iv. Previous SEG IAM Product Number
+		v. Product Line
+		vi. Product Type
+		vii. SEG IAM Product Number
+		viii. Name (Category) (Already exists) > Save
+	c. Under Result Filters > Manage Filters, Add
+		i. Product Category ID (Already exists)
+		ii. Product Line
+		iii. Make
+		iv. Generation > Save
+	d. Under Search Index Summary, click Rebuild Index
+		i. Wait for the process to Complete
+
+11. Register Classes
+	a. Go to Gear Icon (top right) > ​Developer Console
+	b. Type Control E or otherwise open ​Execute Anonymous
+	c. Rule the scripts under the folder post-deployment steps
+		i. COMPUTE_PRICE
+		ii. CHECK_INVENTORY
+		iii. COMPUTE_SHIPPING
+		iv. COMPUTE_TAXES
+	d. Click ​Execute​ making sure there are no errors
+	e. Confirm with the following SOQL query that 4 classes were registered:
+		- SELECT Id, ExternalServiceProviderId, ExternalServiceProviderType, DeveloperName FROM RegisteredExternalService WHERE DeveloperName in ('COMPUTE_PRICE','CHECK_INVENTORY','COMPUTE_SHIPPING','COMPUTE_TAXES')
+
+12. Store Integration Service Mappings
+	a. Go to Commerce App > Stores > SEG Automotive Store
+	b. Click Administration
+	c. Link all of the classes as Registered External Services by clicking the​ Link Integration in these sections, then ​Next​ and then C​onfirm
+		i. Price Check > COMPUTE_PRICE
+		ii. Store Inventory > CHECK_INVENTORY
+		iii. Shipping Calculation > COMPUTE_SHIPPING
+		iv. Tax Calculation > COMPUTE_TAXES
+
+13. Import CMS
+	a. Go to Salesforce CMS > CMS Workspaces > Open the Record
+	b. Under the header row actions > Click Import Content
+	c. Select the file and upload it.
+
+14. Check Website Images
+	a. a. Go to Commerce App > Stores > SEG Automotive Store
+	b. Click Experience Builder
+	c. On the left-hand-side > Theme > Images
+	d. Check Company Logo and Login page Background image
+
+-- DATA MIGRATION --
+
+1. Catalog - ProductCatalog
+2. WebStoreCatalog - (Assign Store to Catalog)
+	- Need to get the Catalog Id
+3. ProductCategory - ProductCategory
+4. Product Warehouse - Product Warehouse
+	- Need to get the Product Warehouse Id and Product Record Type 'B2B Product'
+5. Products - Products
+	- [SELECT Id FROM ProductCatalog]
+	- [SELECT Id FROM ProductCategory]
+6. ProductCategoryProduct
+7. Product Applications
+8. Commerce Entitlement Policy
+9. Account
+10. Buyer Group
+	- SELECT Id FROM BuyerGroup
+11. Commerce Entitlement Buyer Group
+12. WebStoreBuyerGroup
+	- SELECT Id FROM WebStore
+13. WebStorePricebook
+14. CommerceEntitlementProduct
+15. PricebookEntries
+	- Go to Product > Add Standard Price > Create one manually > take the Id
+	- Insert for others using Data loader
+	- Insert Custom PricebookEntries
+16. Buyer group pricebooks
+16. Workflow
+17. FAQs
+
+
+-- TROUBLESHOOTING NOTE​ --
+
+If you get a message like Portal Owner not having a role you may have missed a prior step. You can fix this by doing the following:
+	1. Go to Setup > Users
+	2. Click Admin User (or your Name)
+	3. Assign the role of CEO to the user if a role is not populated and click ​Save
